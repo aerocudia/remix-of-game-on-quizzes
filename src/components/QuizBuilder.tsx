@@ -25,10 +25,16 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("Medium");
+  const [isPublic, setIsPublic] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!initialId);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState(5);
+  const [aiLoading, setAiLoading] = useState(false);
+  const generateFn = useServerFn(generateAIQuiz);
   const dragIdx = useRef<number | null>(null);
 
   // Load existing
