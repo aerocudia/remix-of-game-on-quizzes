@@ -13,6 +13,7 @@ import { Route as LibraryRouteImport } from './routes/library'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudySetidRouteImport } from './routes/study.$setid'
 import { Route as ResultsSessionidRouteImport } from './routes/results.$sessionid'
 import { Route as PlaySessionidRouteImport } from './routes/play.$sessionid'
 import { Route as JoinRoomcodeRouteImport } from './routes/join.$roomcode'
@@ -40,6 +41,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudySetidRoute = StudySetidRouteImport.update({
+  id: '/study/$setid',
+  path: '/study/$setid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResultsSessionidRoute = ResultsSessionidRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   PlaySessionidRoute: typeof PlaySessionidRoute
   ResultsSessionidRoute: typeof ResultsSessionidRoute
+  StudySetidRoute: typeof StudySetidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study/$setid': {
+      id: '/study/$setid'
+      path: '/study/$setid'
+      fullPath: '/study/$setid'
+      preLoaderRoute: typeof StudySetidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/results/$sessionid': {
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   PlaySessionidRoute: PlaySessionidRoute,
   ResultsSessionidRoute: ResultsSessionidRoute,
+  StudySetidRoute: StudySetidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
