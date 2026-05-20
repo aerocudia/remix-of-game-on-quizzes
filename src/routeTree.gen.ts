@@ -13,6 +13,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminQuizNewRouteImport } from './routes/admin.quiz.new'
+import { Route as AdminQuizIdEditRouteImport } from './routes/admin.quiz.$id.edit'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -34,18 +35,25 @@ const AdminQuizNewRoute = AdminQuizNewRouteImport.update({
   path: '/quiz/new',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminQuizIdEditRoute = AdminQuizIdEditRouteImport.update({
+  id: '/quiz/$id/edit',
+  path: '/quiz/$id/edit',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
+  '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
+  '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,30 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
+  '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/dashboard'
+    | '/admin/quiz/new'
+    | '/admin/quiz/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
-  id: '__root__' | '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
+  to:
+    | '/'
+    | '/admin'
+    | '/admin/dashboard'
+    | '/admin/quiz/new'
+    | '/admin/quiz/$id/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/dashboard'
+    | '/admin/quiz/new'
+    | '/admin/quiz/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -97,17 +122,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminQuizNewRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/quiz/$id/edit': {
+      id: '/admin/quiz/$id/edit'
+      path: '/quiz/$id/edit'
+      fullPath: '/admin/quiz/$id/edit'
+      preLoaderRoute: typeof AdminQuizIdEditRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminQuizNewRoute: typeof AdminQuizNewRoute
+  AdminQuizIdEditRoute: typeof AdminQuizIdEditRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AdminQuizNewRoute: AdminQuizNewRoute,
+  AdminQuizIdEditRoute: AdminQuizIdEditRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
