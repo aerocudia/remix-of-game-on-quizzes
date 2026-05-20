@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlaySessionidRouteImport } from './routes/play.$sessionid'
 import { Route as JoinRoomcodeRouteImport } from './routes/join.$roomcode'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -32,6 +33,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaySessionidRoute = PlaySessionidRouteImport.update({
+  id: '/play/$sessionid',
+  path: '/play/$sessionid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoomcodeRoute = JoinRoomcodeRouteImport.update({
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
+  '/play/$sessionid': typeof PlaySessionidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
+  '/play/$sessionid': typeof PlaySessionidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
+  '/play/$sessionid': typeof PlaySessionidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
+    | '/play/$sessionid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
+    | '/play/$sessionid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
+    | '/play/$sessionid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   JoinRoute: typeof JoinRouteWithChildren
+  PlaySessionidRoute: typeof PlaySessionidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/$sessionid': {
+      id: '/play/$sessionid'
+      path: '/play/$sessionid'
+      fullPath: '/play/$sessionid'
+      preLoaderRoute: typeof PlaySessionidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join/$roomcode': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   JoinRoute: JoinRouteWithChildren,
+  PlaySessionidRoute: PlaySessionidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
