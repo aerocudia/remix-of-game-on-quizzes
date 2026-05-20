@@ -47,6 +47,7 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
         setDescription(quiz.description || "");
         setSubject(quiz.subject || "");
         setDifficulty(quiz.difficulty || "Medium");
+        setIsPublic(!!quiz.is_public);
       }
       const { data: qs } = await supabase.from("questions").select("*").eq("quiz_id", initialId).order("order_index");
       setQuestions((qs as Question[]) || []);
