@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { TIMER_OPTIONS, POINT_OPTIONS, ANSWER_COLORS, type Question, type QuestionType } from "@/lib/quiz";
-import { Plus, Trash2, GripVertical, Save, Play, ArrowLeft, Check } from "lucide-react";
+import { generateAIQuiz } from "@/lib/ai-quiz.functions";
+import { Plus, Trash2, GripVertical, Save, Play, ArrowLeft, Check, Sparkles, Globe, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 
@@ -23,10 +25,16 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("Medium");
+  const [isPublic, setIsPublic] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!initialId);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState(5);
+  const [aiLoading, setAiLoading] = useState(false);
+  const generateFn = useServerFn(generateAIQuiz);
   const dragIdx = useRef<number | null>(null);
 
   // Load existing
@@ -39,6 +47,7 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
         setDescription(quiz.description || "");
         setSubject(quiz.subject || "");
         setDifficulty(quiz.difficulty || "Medium");
+        setIsPublic(!!quiz.is_public);
       }
       const { data: qs } = await supabase.from("questions").select("*").eq("quiz_id", initialId).order("order_index");
       setQuestions((qs as Question[]) || []);
@@ -64,7 +73,7 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
     setSaving(true);
     const id = await ensureQuiz();
     if (!id) { setSaving(false); return; }
-    await supabase.from("quizzes").update({ title: title || "Untitled quiz", description, subject, difficulty, updated_at: new Date().toISOString() }).eq("id", id);
+    await supabase.from("quizzes").update({ title: title || "Untitled quiz", description, subject, difficulty, is_public: isPublic, updated_at: new Date().toISOString() }).eq("id", id);
     // Save questions: upsert by id
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
@@ -90,7 +99,39 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
     const t = setInterval(() => saveAll(true), 30000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, title, description, subject, difficulty, questions]);
+  }, [loaded, title, description, subject, difficulty, isPublic, questions]);
+
+  const runAiGenerate = async () => {
+    if (aiTopic.trim().length < 2) return toast.error("Enter a topic");
+    setAiLoading(true);
+    try {
+      const { questions: gen } = await generateFn({ data: { topic: aiTopic.trim(), count: aiCount, difficulty: difficulty as "Easy" | "Medium" | "Hard" } });
+      if (!gen.length) { toast.error("AI returned no usable questions"); return; }
+      const startIdx = questions.length;
+      const newQs: Question[] = gen.map((g, i) => ({
+        id: "tmp-" + Math.random().toString(36).slice(2),
+        quiz_id: quizId || "",
+        type: "multiple_choice",
+        question_text: g.question_text,
+        image_url: null,
+        options: g.options,
+        correct_answer: g.correct_answer,
+        timer_seconds: 20,
+        points: 500,
+        order_index: startIdx + i,
+      }));
+      setQuestions((qs) => [...qs, ...newQs]);
+      setSelectedIdx(startIdx);
+      if (!title) setTitle(aiTopic.trim());
+      toast.success(`Generated ${newQs.length} questions`);
+      setAiOpen(false);
+      setAiTopic("");
+    } catch (e: any) {
+      toast.error(e?.message || "AI generation failed");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const addQuestion = (type: QuestionType = "multiple_choice") => {
     const base: Question = {
@@ -160,6 +201,17 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
           placeholder="Untitled quiz"
           className="bg-transparent font-display font-bold text-xl outline-none flex-1 min-w-0"
         />
+        <button
+          onClick={() => setIsPublic((v) => !v)}
+          title={isPublic ? "Public — listed in library" : "Private"}
+          className={`px-3 py-2 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition ${isPublic ? "bg-neon/20 text-neon" : "bg-accent text-muted-foreground hover:text-white"}`}
+        >
+          {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+          {isPublic ? "Public" : "Private"}
+        </button>
+        <button onClick={() => setAiOpen(true)} className="px-4 py-2 rounded-xl bg-accent hover:bg-primary/30 transition flex items-center gap-2 text-sm font-semibold">
+          <Sparkles className="w-4 h-4 text-neon" /> AI Generate
+        </button>
         <button onClick={() => saveAll()} disabled={saving} className="px-4 py-2 rounded-xl bg-accent hover:bg-primary/30 transition flex items-center gap-2 text-sm font-semibold">
           <Save className="w-4 h-4" /> {saving ? "Saving…" : "Save"}
         </button>
@@ -167,6 +219,40 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
           <Play className="w-4 h-4" fill="currentColor" /> Host Live
         </button>
       </header>
+
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur flex items-center justify-center p-4" onClick={() => !aiLoading && setAiOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="glass-strong rounded-3xl p-8 max-w-md w-full">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-5 h-5 text-neon" />
+              <h2 className="font-display text-2xl font-bold">AI Quick-Quiz</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">Describe a topic and we'll generate multiple-choice questions for you.</p>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Topic</label>
+            <input value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} placeholder="e.g. Roman Empire, JavaScript basics, 90s pop music"
+              className="w-full bg-input rounded-xl px-4 py-3 mt-2 mb-4 outline-none focus:ring-2 focus:ring-primary" autoFocus />
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Questions</label>
+                <input type="number" min={1} max={15} value={aiCount} onChange={(e) => setAiCount(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-input rounded-xl px-4 py-3 mt-2 outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Difficulty</label>
+                <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="w-full bg-input rounded-xl px-4 py-3 mt-2 outline-none focus:ring-2 focus:ring-primary">
+                  <option>Easy</option><option>Medium</option><option>Hard</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setAiOpen(false)} disabled={aiLoading} className="flex-1 bg-accent rounded-xl py-3 font-semibold hover:bg-accent/70 transition">Cancel</button>
+              <button onClick={runAiGenerate} disabled={aiLoading} className="flex-1 gradient-primary text-white rounded-xl py-3 font-bold glow-violet hover:scale-105 transition disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center gap-2">
+                {aiLoading ? "Generating…" : <><Sparkles className="w-4 h-4" /> Generate</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0">
         {/* Question list */}

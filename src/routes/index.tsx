@@ -49,9 +49,10 @@ function Landing() {
           </div>
           <span>Deon<span className="gradient-text">ToWin</span></span>
         </div>
-        <Link to="/join" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">
-          Have a code? Join →
-        </Link>
+        <div className="flex items-center gap-5 text-sm font-semibold text-muted-foreground">
+          <Link to="/library" className="hover:text-foreground transition">Library</Link>
+          <Link to="/join" className="hover:text-foreground transition">Have a code? Join →</Link>
+        </div>
       </header>
 
       <main className="px-6 pt-12 pb-20 max-w-6xl mx-auto">

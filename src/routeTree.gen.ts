@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudySetidRouteImport } from './routes/study.$setid'
 import { Route as ResultsSessionidRouteImport } from './routes/results.$sessionid'
 import { Route as PlaySessionidRouteImport } from './routes/play.$sessionid'
 import { Route as JoinRoomcodeRouteImport } from './routes/join.$roomcode'
@@ -21,6 +23,11 @@ import { Route as AdminSessionIdRouteImport } from './routes/admin.session.$id'
 import { Route as AdminQuizNewRouteImport } from './routes/admin.quiz.new'
 import { Route as AdminQuizIdEditRouteImport } from './routes/admin.quiz.$id.edit'
 
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
@@ -34,6 +41,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudySetidRoute = StudySetidRouteImport.update({
+  id: '/study/$setid',
+  path: '/study/$setid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResultsSessionidRoute = ResultsSessionidRouteImport.update({
@@ -81,11 +93,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -94,11 +108,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -108,11 +124,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
   '/play/$sessionid': typeof PlaySessionidRoute
   '/results/$sessionid': typeof ResultsSessionidRoute
+  '/study/$setid': typeof StudySetidRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -123,11 +141,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -136,11 +156,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -149,11 +171,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
     | '/play/$sessionid'
     | '/results/$sessionid'
+    | '/study/$setid'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -163,12 +187,21 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   JoinRoute: typeof JoinRouteWithChildren
+  LibraryRoute: typeof LibraryRoute
   PlaySessionidRoute: typeof PlaySessionidRoute
   ResultsSessionidRoute: typeof ResultsSessionidRoute
+  StudySetidRoute: typeof StudySetidRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/join': {
       id: '/join'
       path: '/join'
@@ -188,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study/$setid': {
+      id: '/study/$setid'
+      path: '/study/$setid'
+      fullPath: '/study/$setid'
+      preLoaderRoute: typeof StudySetidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/results/$sessionid': {
@@ -281,8 +321,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   JoinRoute: JoinRouteWithChildren,
+  LibraryRoute: LibraryRoute,
   PlaySessionidRoute: PlaySessionidRoute,
   ResultsSessionidRoute: ResultsSessionidRoute,
+  StudySetidRoute: StudySetidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

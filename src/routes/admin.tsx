@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Plus, BarChart3, LogOut, Zap } from "lucide-react";
+import { LayoutDashboard, Plus, BarChart3, LogOut, Zap, Library } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -24,6 +24,7 @@ function AdminLayout() {
   const nav = [
     { to: "/admin/dashboard", label: "My Quizzes", icon: LayoutDashboard },
     { to: "/admin/quiz/new", label: "New Quiz", icon: Plus },
+    { to: "/library", label: "Public Library", icon: Library },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   ];
 
