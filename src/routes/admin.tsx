@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Plus, BarChart3, LogOut, Zap } from "lucide-react";
+import { LayoutDashboard, Plus, BarChart3, LogOut, Zap, Library } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
