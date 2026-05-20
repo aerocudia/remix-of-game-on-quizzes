@@ -61,11 +61,10 @@ function Landing() {
             <Sparkles className="w-3.5 h-3.5" /> Live quizzes, no login for players
           </div>
           <h1 className="font-display text-6xl md:text-8xl font-bold leading-[0.95] tracking-tight">
-            Quiz nights<br />
-            <span className="gradient-text">that hit different.</span>
+            A Deontological Quiz
           </h1>
           <p className="mt-8 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
-            Host live game-show quizzes for your classroom, team, or party. Players scan a QR code, pick an avatar, and the chaos begins.
+            Let's turn the classroom into a philosophical battlefield where the points don't matter, but the intent definitely does.
           </p>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
