@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as AdminSessionIdRouteImport } from './routes/admin.session.$id'
 import { Route as AdminQuizNewRouteImport } from './routes/admin.quiz.new'
 import { Route as AdminQuizIdEditRouteImport } from './routes/admin.quiz.$id.edit'
 
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/join': typeof JoinRouteWithChildren
+  '/library': typeof LibraryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/join/$roomcode': typeof JoinRoomcodeRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/join'
+    | '/library'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/join/$roomcode'
@@ -163,12 +175,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   JoinRoute: typeof JoinRouteWithChildren
+  LibraryRoute: typeof LibraryRoute
   PlaySessionidRoute: typeof PlaySessionidRoute
   ResultsSessionidRoute: typeof ResultsSessionidRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/join': {
       id: '/join'
       path: '/join'
@@ -281,9 +301,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   JoinRoute: JoinRouteWithChildren,
+  LibraryRoute: LibraryRoute,
   PlaySessionidRoute: PlaySessionidRoute,
   ResultsSessionidRoute: ResultsSessionidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
