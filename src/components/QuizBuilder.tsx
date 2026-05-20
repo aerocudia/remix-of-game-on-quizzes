@@ -99,7 +99,39 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
     const t = setInterval(() => saveAll(true), 30000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, title, description, subject, difficulty, questions]);
+  }, [loaded, title, description, subject, difficulty, isPublic, questions]);
+
+  const runAiGenerate = async () => {
+    if (aiTopic.trim().length < 2) return toast.error("Enter a topic");
+    setAiLoading(true);
+    try {
+      const { questions: gen } = await generateFn({ data: { topic: aiTopic.trim(), count: aiCount, difficulty: difficulty as "Easy" | "Medium" | "Hard" } });
+      if (!gen.length) { toast.error("AI returned no usable questions"); return; }
+      const startIdx = questions.length;
+      const newQs: Question[] = gen.map((g, i) => ({
+        id: "tmp-" + Math.random().toString(36).slice(2),
+        quiz_id: quizId || "",
+        type: "multiple_choice",
+        question_text: g.question_text,
+        image_url: null,
+        options: g.options,
+        correct_answer: g.correct_answer,
+        timer_seconds: 20,
+        points: 500,
+        order_index: startIdx + i,
+      }));
+      setQuestions((qs) => [...qs, ...newQs]);
+      setSelectedIdx(startIdx);
+      if (!title) setTitle(aiTopic.trim());
+      toast.success(`Generated ${newQs.length} questions`);
+      setAiOpen(false);
+      setAiTopic("");
+    } catch (e: any) {
+      toast.error(e?.message || "AI generation failed");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const addQuestion = (type: QuestionType = "multiple_choice") => {
     const base: Question = {
