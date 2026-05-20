@@ -73,7 +73,7 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
     setSaving(true);
     const id = await ensureQuiz();
     if (!id) { setSaving(false); return; }
-    await supabase.from("quizzes").update({ title: title || "Untitled quiz", description, subject, difficulty, updated_at: new Date().toISOString() }).eq("id", id);
+    await supabase.from("quizzes").update({ title: title || "Untitled quiz", description, subject, difficulty, is_public: isPublic, updated_at: new Date().toISOString() }).eq("id", id);
     // Save questions: upsert by id
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
