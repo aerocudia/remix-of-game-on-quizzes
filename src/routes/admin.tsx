@@ -24,6 +24,7 @@ function AdminLayout() {
   const nav = [
     { to: "/admin/dashboard", label: "My Quizzes", icon: LayoutDashboard },
     { to: "/admin/quiz/new", label: "New Quiz", icon: Plus },
+    { to: "/library", label: "Public Library", icon: Library },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   ];
 
