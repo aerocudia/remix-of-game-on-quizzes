@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JoinRoomcodeRouteImport } from './routes/join.$roomcode'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminSessionIdRouteImport } from './routes/admin.session.$id'
@@ -32,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoomcodeRoute = JoinRoomcodeRouteImport.update({
+  id: '/$roomcode',
+  path: '/$roomcode',
+  getParentRoute: () => JoinRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
@@ -62,9 +68,10 @@ const AdminQuizIdEditRoute = AdminQuizIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/join': typeof JoinRoute
+  '/join': typeof JoinRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/join/$roomcode': typeof JoinRoomcodeRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -72,9 +79,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/join': typeof JoinRoute
+  '/join': typeof JoinRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/join/$roomcode': typeof JoinRoomcodeRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -83,9 +91,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/join': typeof JoinRoute
+  '/join': typeof JoinRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/join/$roomcode': typeof JoinRoomcodeRoute
   '/admin/quiz/new': typeof AdminQuizNewRoute
   '/admin/session/$id': typeof AdminSessionIdRoute
   '/admin/quiz/$id/edit': typeof AdminQuizIdEditRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/join/$roomcode'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/join/$roomcode'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/join/$roomcode'
     | '/admin/quiz/new'
     | '/admin/session/$id'
     | '/admin/quiz/$id/edit'
@@ -126,7 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
-  JoinRoute: typeof JoinRoute
+  JoinRoute: typeof JoinRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -151,6 +163,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/join/$roomcode': {
+      id: '/join/$roomcode'
+      path: '/$roomcode'
+      fullPath: '/join/$roomcode'
+      preLoaderRoute: typeof JoinRoomcodeRouteImport
+      parentRoute: typeof JoinRoute
     }
     '/admin/dashboard': {
       id: '/admin/dashboard'
@@ -208,10 +227,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface JoinRouteChildren {
+  JoinRoomcodeRoute: typeof JoinRoomcodeRoute
+}
+
+const JoinRouteChildren: JoinRouteChildren = {
+  JoinRoomcodeRoute: JoinRoomcodeRoute,
+}
+
+const JoinRouteWithChildren = JoinRoute._addFileChildren(JoinRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
-  JoinRoute: JoinRoute,
+  JoinRoute: JoinRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
