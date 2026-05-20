@@ -12,6 +12,7 @@ export const Route = createFileRoute("/admin/session/$id")({ component: HostSess
 interface SessionRow {
   id: string; quiz_id: string; room_code: string; status: string;
   current_question_index: number; current_question_started_at: string | null;
+  started_at: string | null;
 }
 interface Player { id: string; nickname: string; avatar: string; score: number; }
 
