@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminQuizNewRouteImport } from './routes/admin.quiz.new'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -28,29 +29,37 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminQuizNewRoute = AdminQuizNewRouteImport.update({
+  id: '/quiz/new',
+  path: '/quiz/new',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/quiz/new': typeof AdminQuizNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/quiz/new': typeof AdminQuizNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/quiz/new': typeof AdminQuizNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/dashboard'
+  fullPaths: '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/dashboard'
-  id: '__root__' | '/' | '/admin' | '/admin/dashboard'
+  to: '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
+  id: '__root__' | '/' | '/admin' | '/admin/dashboard' | '/admin/quiz/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -81,15 +90,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/quiz/new': {
+      id: '/admin/quiz/new'
+      path: '/quiz/new'
+      fullPath: '/admin/quiz/new'
+      preLoaderRoute: typeof AdminQuizNewRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminQuizNewRoute: typeof AdminQuizNewRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminQuizNewRoute: AdminQuizNewRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -101,3 +119,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
