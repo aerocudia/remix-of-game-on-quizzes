@@ -201,6 +201,17 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
           placeholder="Untitled quiz"
           className="bg-transparent font-display font-bold text-xl outline-none flex-1 min-w-0"
         />
+        <button
+          onClick={() => setIsPublic((v) => !v)}
+          title={isPublic ? "Public — listed in library" : "Private"}
+          className={`px-3 py-2 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition ${isPublic ? "bg-neon/20 text-neon" : "bg-accent text-muted-foreground hover:text-white"}`}
+        >
+          {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+          {isPublic ? "Public" : "Private"}
+        </button>
+        <button onClick={() => setAiOpen(true)} className="px-4 py-2 rounded-xl bg-accent hover:bg-primary/30 transition flex items-center gap-2 text-sm font-semibold">
+          <Sparkles className="w-4 h-4 text-neon" /> AI Generate
+        </button>
         <button onClick={() => saveAll()} disabled={saving} className="px-4 py-2 rounded-xl bg-accent hover:bg-primary/30 transition flex items-center gap-2 text-sm font-semibold">
           <Save className="w-4 h-4" /> {saving ? "Saving…" : "Save"}
         </button>
@@ -208,6 +219,40 @@ export function QuizBuilder({ quizId: initialId }: { quizId: string | null }) {
           <Play className="w-4 h-4" fill="currentColor" /> Host Live
         </button>
       </header>
+
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur flex items-center justify-center p-4" onClick={() => !aiLoading && setAiOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="glass-strong rounded-3xl p-8 max-w-md w-full">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-5 h-5 text-neon" />
+              <h2 className="font-display text-2xl font-bold">AI Quick-Quiz</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">Describe a topic and we'll generate multiple-choice questions for you.</p>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Topic</label>
+            <input value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} placeholder="e.g. Roman Empire, JavaScript basics, 90s pop music"
+              className="w-full bg-input rounded-xl px-4 py-3 mt-2 mb-4 outline-none focus:ring-2 focus:ring-primary" autoFocus />
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Questions</label>
+                <input type="number" min={1} max={15} value={aiCount} onChange={(e) => setAiCount(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-input rounded-xl px-4 py-3 mt-2 outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Difficulty</label>
+                <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="w-full bg-input rounded-xl px-4 py-3 mt-2 outline-none focus:ring-2 focus:ring-primary">
+                  <option>Easy</option><option>Medium</option><option>Hard</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setAiOpen(false)} disabled={aiLoading} className="flex-1 bg-accent rounded-xl py-3 font-semibold hover:bg-accent/70 transition">Cancel</button>
+              <button onClick={runAiGenerate} disabled={aiLoading} className="flex-1 gradient-primary text-white rounded-xl py-3 font-bold glow-violet hover:scale-105 transition disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center gap-2">
+                {aiLoading ? "Generating…" : <><Sparkles className="w-4 h-4" /> Generate</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0">
         {/* Question list */}
