@@ -257,10 +257,3 @@ function HostSession() {
     </div>
   );
 }
-
-function isCorrect(answer: string | null, q: Question) {
-  if (q.type === "poll") return false;
-  if (!answer || !q.correct_answer) return false;
-  if (q.type === "type_answer") return answer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
-  return answer === q.correct_answer;
-}
