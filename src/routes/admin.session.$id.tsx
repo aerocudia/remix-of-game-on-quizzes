@@ -71,6 +71,14 @@ function HostSession() {
     return Math.max(0, Math.ceil(currentQ.timer_seconds - elapsed));
   }, [currentQ, session, now]);
 
+  const qResponses = currentQ ? responses.filter(r => r.question_id === currentQ.id) : [];
+  const tally = useMemo(() => {
+    if (!currentQ) return {} as Record<string, number>;
+    const t: Record<string, number> = {};
+    qResponses.forEach(r => { if (r.answer) t[r.answer] = (t[r.answer] || 0) + 1; });
+    return t;
+  }, [qResponses, currentQ]);
+
   // Auto-advance to reveal when timer hits 0
   useEffect(() => {
     if (session?.status === "active" && currentQ && remaining === 0) {
@@ -96,22 +104,7 @@ function HostSession() {
   const reveal = async () => {
     if (!currentQ) return;
     await supabase.from("sessions").update({ status: "reveal" }).eq("id", id);
-    // Score players
-    const qResponses = responses.filter(r => r.question_id === currentQ.id);
-    const { data: full } = await supabase.from("session_responses").select("*").eq("session_id", id).eq("question_id", currentQ.id);
-    const all = full || qResponses;
-    for (const r of all as any[]) {
-      if (r.points_earned > 0) continue; // already scored
-      const correct = isCorrect(r.answer, currentQ);
-      const pts = correct ? r.points_earned || 0 : 0;
-      if (correct && (r.points_earned ?? 0) === 0) {
-        // backfill
-      }
-      if (correct) {
-        await supabase.from("session_players").update({ score: (players.find(p => p.id === r.player_id)?.score || 0) + (r.points_earned || currentQ.points) }).eq("id", r.player_id);
-      }
-      void pts;
-    }
+    // Scoring already happened client-side in submitAnswer for each player.
   };
 
   const nextQuestion = async () => {
@@ -186,15 +179,6 @@ function HostSession() {
       </div>
     );
   }
-
-  // ACTIVE / REVEAL
-  const qResponses = currentQ ? responses.filter(r => r.question_id === currentQ.id) : [];
-  const tally = useMemo(() => {
-    if (!currentQ) return {};
-    const t: Record<string, number> = {};
-    qResponses.forEach(r => { if (r.answer) t[r.answer] = (t[r.answer] || 0) + 1; });
-    return t;
-  }, [qResponses, currentQ]);
 
   return (
     <div className="min-h-screen p-6 md:p-10">
@@ -272,11 +256,4 @@ function HostSession() {
       )}
     </div>
   );
-}
-
-function isCorrect(answer: string | null, q: Question) {
-  if (q.type === "poll") return false;
-  if (!answer || !q.correct_answer) return false;
-  if (q.type === "type_answer") return answer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
-  return answer === q.correct_answer;
 }
