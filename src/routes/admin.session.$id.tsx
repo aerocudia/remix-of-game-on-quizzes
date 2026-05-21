@@ -71,6 +71,14 @@ function HostSession() {
     return Math.max(0, Math.ceil(currentQ.timer_seconds - elapsed));
   }, [currentQ, session, now]);
 
+  const qResponses = currentQ ? responses.filter(r => r.question_id === currentQ.id) : [];
+  const tally = useMemo(() => {
+    if (!currentQ) return {} as Record<string, number>;
+    const t: Record<string, number> = {};
+    qResponses.forEach(r => { if (r.answer) t[r.answer] = (t[r.answer] || 0) + 1; });
+    return t;
+  }, [qResponses, currentQ]);
+
   // Auto-advance to reveal when timer hits 0
   useEffect(() => {
     if (session?.status === "active" && currentQ && remaining === 0) {
