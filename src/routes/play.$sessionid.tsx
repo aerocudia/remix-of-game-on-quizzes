@@ -139,7 +139,6 @@ function PlayScreen() {
   // REVEAL
   if (session.status === "reveal") {
     const correct = myAnswer === currentQ.correct_answer;
-    if (correct && myPoints && myPoints > 0) { setTimeout(() => fireConfetti(), 50); }
     const sorted = [...allPlayers].sort((a, b) => b.score - a.score);
     const myRank = sorted.findIndex(p => p.id === player.id) + 1;
     return (
