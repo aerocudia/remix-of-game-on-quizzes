@@ -195,15 +195,6 @@ function HostSession() {
     );
   }
 
-  // ACTIVE / REVEAL
-  const qResponses = currentQ ? responses.filter(r => r.question_id === currentQ.id) : [];
-  const tally = useMemo(() => {
-    if (!currentQ) return {};
-    const t: Record<string, number> = {};
-    qResponses.forEach(r => { if (r.answer) t[r.answer] = (t[r.answer] || 0) + 1; });
-    return t;
-  }, [qResponses, currentQ]);
-
   return (
     <div className="min-h-screen p-6 md:p-10">
       <header className="flex items-center justify-between mb-6">
