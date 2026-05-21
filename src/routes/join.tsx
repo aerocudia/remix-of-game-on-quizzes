@@ -18,7 +18,19 @@ function JoinPage() {
       toast.error("Enter the room code from your host (4+ characters)");
       return;
     }
-    navigate({ to: "/join/$roomcode", params: { roomcode: clean } });
+    try {
+      navigate({ to: "/join/$roomcode", params: { roomcode: clean } });
+    } catch {
+      if (typeof window !== "undefined") window.location.assign(`/join/${clean}`);
+    }
+    // Safety net: if SPA navigation no-ops, force a hard nav
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        if (window.location.pathname === "/join") {
+          window.location.assign(`/join/${clean}`);
+        }
+      }, 200);
+    }
   };
 
   return (
