@@ -74,6 +74,14 @@ function PlayScreen() {
     return () => clearInterval(t);
   }, []);
 
+  // Fire confetti once when entering reveal with a correct answer
+  useEffect(() => {
+    if (session?.status === "reveal" && myPoints && myPoints > 0) {
+      fireConfetti();
+    }
+  }, [session?.status, myPoints]);
+
+
   const currentQ = session && session.current_question_index >= 0 ? questions[session.current_question_index] : null;
   const elapsed = useMemo(() => {
     if (!currentQ || !session?.current_question_started_at) return 0;
