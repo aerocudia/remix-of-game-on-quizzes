@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Zap, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/join")({
   component: JoinPage,
@@ -11,6 +12,15 @@ function JoinPage() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
 
+  const go = () => {
+    const clean = code.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+    if (clean.length < 4) {
+      toast.error("Enter the room code from your host (4+ characters)");
+      return;
+    }
+    navigate({ to: "/join/$roomcode", params: { roomcode: clean } });
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="flex items-center gap-2 font-display font-bold text-2xl mb-12">
@@ -20,22 +30,31 @@ function JoinPage() {
         Deon<span className="gradient-text">ToWin</span>
       </div>
       <form
-        onSubmit={(e) => { e.preventDefault(); if (code.trim().length >= 4) navigate({ to: "/join/$roomcode", params: { roomcode: code.trim().toUpperCase() } }); }}
+        onSubmit={(e) => { e.preventDefault(); go(); }}
         className="glass-strong rounded-3xl p-8 w-full max-w-md"
       >
         <h1 className="font-display font-bold text-3xl text-center mb-2">Enter room code</h1>
-        <p className="text-center text-muted-foreground text-sm mb-6">Ask your host for the 6-letter code</p>
+        <p className="text-center text-muted-foreground text-sm mb-6">Ask your host for the code on their screen</p>
         <input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="ABC123"
           maxLength={8}
           autoFocus
+          inputMode="text"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck={false}
           className="w-full bg-input rounded-2xl px-4 py-6 font-display font-bold tracking-[0.3em] text-center text-4xl outline-none focus:ring-2 focus:ring-neon mb-4"
         />
-        <button type="submit" className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-105 transition flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={go}
+          className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
+        >
           Continue <ArrowRight className="w-5 h-5" />
         </button>
+        <p className="text-center text-xs text-muted-foreground mt-4">No account needed. Just bring vibes. ✨</p>
       </form>
     </div>
   );
