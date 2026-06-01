@@ -47,6 +47,26 @@ function PlayScreen() {
     })();
   }, [sessionid]);
 
+  // Refresh recovery: if player already answered current question, restore lock state
+  useEffect(() => {
+    if (!player || !session || session.current_question_index < 0) return;
+    const q = questions[session.current_question_index];
+    if (!q) return;
+    (async () => {
+      const { data } = await supabase
+        .from("session_responses")
+        .select("answer,points_earned")
+        .eq("session_id", sessionid)
+        .eq("player_id", player.id)
+        .eq("question_id", q.id)
+        .maybeSingle();
+      if (data) {
+        setMyAnswer(data.answer);
+        setMyPoints(data.points_earned ?? 0);
+      }
+    })();
+  }, [player, session?.current_question_index, questions, sessionid]);
+
   // Realtime
   useEffect(() => {
     const ch = supabase.channel("play-" + sessionid)
