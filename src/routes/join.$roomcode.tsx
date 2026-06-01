@@ -23,20 +23,39 @@ function JoinRoom() {
     })();
   }, [roomcode]);
 
+  const PROFANITY = ["fuck","shit","bitch","cunt","nigger","faggot","retard","asshole"];
+  const isProfane = (s: string) => {
+    const norm = s.toLowerCase().replace(/[^a-z]/g, "");
+    return PROFANITY.some(w => norm.includes(w));
+  };
+
   const join = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session) return;
     if (session.status !== "lobby") return toast.error("This game has already started");
-    if (!nickname.trim()) return toast.error("Pick a nickname");
+    const name = nickname.trim().slice(0, 20);
+    if (!name) return toast.error("Pick a nickname");
+    if (name.length < 2) return toast.error("Nickname too short");
+    if (isProfane(name)) return toast.error("Please pick a friendlier nickname");
     setJoining(true);
+    // Duplicate-nickname check
+    const { data: existing } = await supabase
+      .from("session_players")
+      .select("id")
+      .eq("session_id", session.id)
+      .ilike("nickname", name);
+    if (existing && existing.length > 0) {
+      setJoining(false);
+      return toast.error("That nickname is taken — try another");
+    }
     const { data, error } = await supabase
       .from("session_players")
-      .insert({ session_id: session.id, nickname: nickname.trim().slice(0, 20), avatar })
+      .insert({ session_id: session.id, nickname: name, avatar })
       .select()
       .single();
     if (error || !data) { setJoining(false); return toast.error("Could not join"); }
     if (typeof window !== "undefined") {
-      localStorage.setItem(`player-${session.id}`, JSON.stringify({ id: data.id, nickname, avatar }));
+      localStorage.setItem(`player-${session.id}`, JSON.stringify({ id: data.id, nickname: name, avatar }));
     }
     navigate({ to: "/play/$sessionid", params: { sessionid: session.id } });
   };
