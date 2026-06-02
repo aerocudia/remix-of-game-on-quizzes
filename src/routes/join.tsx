@@ -1,7 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Zap, ArrowRight } from "lucide-react";
+import { Zap, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/join")({
   component: JoinPage,
@@ -9,27 +10,40 @@ export const Route = createFileRoute("/join")({
 });
 
 function JoinPage() {
-  const navigate = useNavigate();
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const go = () => {
+  const go = async () => {
+    if (loading) return;
     const clean = code.replace(/[^A-Z0-9]/gi, "").toUpperCase();
     if (clean.length < 4) {
       toast.error("Enter the room code from your host (4+ characters)");
       return;
     }
+    setLoading(true);
     try {
-      navigate({ to: "/join/$roomcode", params: { roomcode: clean } });
-    } catch {
-      if (typeof window !== "undefined") window.location.assign(`/join/${clean}`);
-    }
-    // Safety net: if SPA navigation no-ops, force a hard nav
-    if (typeof window !== "undefined") {
-      setTimeout(() => {
-        if (window.location.pathname === "/join") {
-          window.location.assign(`/join/${clean}`);
-        }
-      }, 200);
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("id, status")
+        .eq("room_code", clean)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        toast.error("Room not found — double-check the code");
+        setLoading(false);
+        return;
+      }
+      if (data.status === "ended") {
+        toast.error("This game has already ended");
+        setLoading(false);
+        return;
+      }
+      // Hard navigation — guaranteed to work regardless of router state
+      window.location.assign(`/join/${clean}`);
+    } catch (err) {
+      console.error("join lookup failed", err);
+      toast.error("Couldn't reach the server — check your connection");
+      setLoading(false);
     }
   };
 
@@ -60,11 +74,11 @@ function JoinPage() {
           className="w-full bg-input rounded-2xl px-4 py-6 font-display font-bold tracking-[0.3em] text-center text-4xl outline-none focus:ring-2 focus:ring-neon mb-4"
         />
         <button
-          type="button"
-          onClick={go}
-          className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
+          type="submit"
+          disabled={loading}
+          className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
         >
-          Continue <ArrowRight className="w-5 h-5" />
+          {loading ? (<><Loader2 className="w-5 h-5 animate-spin" /> Connecting…</>) : (<>Continue <ArrowRight className="w-5 h-5" /></>)}
         </button>
         <p className="text-center text-xs text-muted-foreground mt-4">No account needed. Just bring vibes. ✨</p>
       </form>
