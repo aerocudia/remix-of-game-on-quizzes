@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ANSWER_COLORS, type Question, calculatePoints, fireConfetti } from "@/lib/quiz";
+import { ANSWER_COLORS, type Question, fireConfetti } from "@/lib/quiz";
+import { submitAnswerFn } from "@/lib/play.functions";
 import { Zap, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/play/$sessionid")({ component: PlayScreen });
