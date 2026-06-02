@@ -69,40 +69,37 @@ function PlayScreen() {
     })();
   }, [player, session?.current_question_index, questions, sessionid]);
 
-  // Realtime
+  // Realtime — stable subscription, does NOT depend on session state
   useEffect(() => {
     const ch = supabase.channel("play-" + sessionid)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "sessions", filter: `id=eq.${sessionid}` },
         (p: any) => {
-          const prevIdx = session?.current_question_index;
-          setSession(p.new);
-          if (p.new.current_question_index !== prevIdx) {
-            setMyAnswer(null); setMyPoints(null); setAnsweredAt(null); setTypedAnswer("");
-          }
+          setSession((prev) => {
+            if (prev && p.new.current_question_index !== prev.current_question_index) {
+              setMyAnswer(null); setMyPoints(null); setTypedAnswer("");
+            }
+            return p.new;
+          });
           if (p.new.status === "ended") navigate({ to: "/results/$sessionid", params: { sessionid } });
         })
       .on("postgres_changes", { event: "*", schema: "public", table: "session_players", filter: `session_id=eq.${sessionid}` },
         (p: any) => {
-          if (p.eventType === "INSERT") setAllPlayers((ps) => [...ps, p.new]);
+          if (p.eventType === "INSERT") setAllPlayers((ps) => ps.some(x => x.id === p.new.id) ? ps : [...ps, p.new]);
           else if (p.eventType === "UPDATE") setAllPlayers((ps) => ps.map(x => x.id === p.new.id ? p.new : x));
           else if (p.eventType === "DELETE") setAllPlayers((ps) => ps.filter(x => x.id !== p.old.id));
         })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [sessionid, navigate, session?.current_question_index]);
+  }, [sessionid, navigate]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 200);
     return () => clearInterval(t);
   }, []);
 
-  // Fire confetti once when entering reveal with a correct answer
   useEffect(() => {
-    if (session?.status === "reveal" && myPoints && myPoints > 0) {
-      fireConfetti();
-    }
+    if (session?.status === "reveal" && myPoints && myPoints > 0) fireConfetti();
   }, [session?.status, myPoints]);
-
 
   const currentQ = session && session.current_question_index >= 0 ? questions[session.current_question_index] : null;
   const elapsed = useMemo(() => {
@@ -112,27 +109,33 @@ function PlayScreen() {
   const remaining = currentQ ? Math.max(0, Math.ceil(currentQ.timer_seconds - elapsed)) : 0;
   const progressPct = currentQ ? Math.min(100, (elapsed / currentQ.timer_seconds) * 100) : 0;
 
-  const submitAnswer = async (answer: string) => {
-    if (!player || !currentQ || myAnswer !== null || !session?.current_question_started_at) return;
-    const responseTimeMs = now - new Date(session.current_question_started_at).getTime();
-    const isPoll = currentQ.type === "poll";
-    const correct = !isPoll && currentQ.correct_answer && (
-      currentQ.type === "type_answer"
-        ? answer.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase()
-        : answer === currentQ.correct_answer
-    );
-    const pts = correct ? calculatePoints(currentQ.points, responseTimeMs, currentQ.timer_seconds) : 0;
-    setMyAnswer(answer); setAnsweredAt(now); setMyPoints(pts);
-    await supabase.from("session_responses").insert({
-      session_id: sessionid, player_id: player.id, question_id: currentQ.id,
-      answer, is_correct: !!correct, points_earned: pts, response_time_ms: responseTimeMs,
-    });
-    // Update score immediately
-    if (pts > 0) {
-      const me = allPlayers.find(p => p.id === player.id);
-      await supabase.from("session_players").update({ score: (me?.score || 0) + pts }).eq("id", player.id);
+  const submitAnswer = async (answer: string | null) => {
+    if (!player || !currentQ || myAnswer !== null || submittingRef.current) return;
+    submittingRef.current = true;
+    setMyAnswer(answer ?? "");
+    try {
+      const res = await submitAnswerFn({
+        data: { sessionId: sessionid, playerId: player.id, questionId: currentQ.id, answer },
+      });
+      setMyPoints(res?.points ?? 0);
+    } catch (e) {
+      setMyAnswer(null);
+      console.error("submit failed", e);
+    } finally {
+      submittingRef.current = false;
     }
   };
+
+  // Auto-submit when timer expires
+  useEffect(() => {
+    if (!currentQ || session?.status !== "active") return;
+    if (myAnswer !== null) return;
+    if (remaining > 0) return;
+    if (autoSubmittedRef.current === currentQ.id) return;
+    autoSubmittedRef.current = currentQ.id;
+    submitAnswer(currentQ.type === "type_answer" ? (typedAnswer.trim() || null) : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remaining, currentQ?.id, session?.status, myAnswer]);
 
   if (!player || !session) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
 
