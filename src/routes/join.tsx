@@ -74,11 +74,11 @@ function JoinPage() {
           className="w-full bg-input rounded-2xl px-4 py-6 font-display font-bold tracking-[0.3em] text-center text-4xl outline-none focus:ring-2 focus:ring-neon mb-4"
         />
         <button
-          type="button"
-          onClick={go}
-          className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
+          type="submit"
+          disabled={loading}
+          className="w-full gradient-primary text-white font-bold py-4 rounded-2xl glow-violet hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
         >
-          Continue <ArrowRight className="w-5 h-5" />
+          {loading ? (<><Loader2 className="w-5 h-5 animate-spin" /> Connecting…</>) : (<>Continue <ArrowRight className="w-5 h-5" /></>)}
         </button>
         <p className="text-center text-xs text-muted-foreground mt-4">No account needed. Just bring vibes. ✨</p>
       </form>
