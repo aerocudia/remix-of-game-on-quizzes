@@ -21,10 +21,11 @@ function PlayScreen() {
   const [player, setPlayer] = useState<PlayerCache | null>(null);
   const [myAnswer, setMyAnswer] = useState<string | null>(null);
   const [myPoints, setMyPoints] = useState<number | null>(null);
-  const [answeredAt, setAnsweredAt] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
   const [allPlayers, setAllPlayers] = useState<{ id: string; nickname: string; avatar: string; score: number }[]>([]);
   const [typedAnswer, setTypedAnswer] = useState("");
+  const autoSubmittedRef = useRef<string | null>(null);
+  const submittingRef = useRef(false);
 
   // Restore player from local storage
   useEffect(() => {
